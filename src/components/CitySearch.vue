@@ -1,6 +1,13 @@
 <template>
   <div>
-    <favorite-cities v-bind:favoriteCities="favorites"></favorite-cities>
+    <favorite-cities v-bind:favoriteCities="favorites" v-bind:homeCity="home" v-on:added-Home="newHome"></favorite-cities>
+    <ul class="cities" v-if="home">
+      <li class="home">
+        <h2>Home:</h2>
+        <h2>{{ home.name }}, {{ home.sys.country }}</h2>
+        <p><router-link v-bind:to="{ name: 'CurrentWeather', params: { cityId: home.id } }">View Current Weather</router-link></p>
+      </li>
+    </ul>
     <h2>City Search</h2>
     <message-container v-bind:messages="messages"></message-container>
     <form v-on:submit.prevent="getCities">
@@ -16,6 +23,7 @@
 
         <weather-data v-bind:weatherData="city.main"></weather-data>
         <p><button class="save" v-on:click="saveCity(city)">Save City to Favorites</button></p>
+        <p><button class="save" v-on:click="addHome(city); saveCity(city)">Set City as Home</button></p>
       </li>
     </ul>
   </div>
@@ -45,12 +53,14 @@ export default {
       query: '',
       showLoading: false,
       messages: [],
-      favorites: []
+      favorites: [],
+      home:''
     }
   },
   created () {
     if (this.$ls.get('favoriteCities')) {
       this.favorites = this.$ls.get('favoriteCities');
+      this.home = this.$ls.get('homeCity');
     }
 
   },
@@ -59,6 +69,15 @@ export default {
       this.favorites.push(city);
       this.$ls.set('favoriteCities', this.favorites);
 
+    },
+    addHome: function (city) {
+    this.home = city;
+    this.$ls.set('homeCity', this.home);
+    console.log('added home');
+    },
+    newHome: function (city) {
+    this.home = this.$ls.get('homeCity');
+    console.log('new home added');
     },
     getCities: function () {
       this.results = null;
@@ -123,6 +142,14 @@ li {
 
 a {
   color: #42b983;
+}
+.home{
+  display: inline-block;
+  width: 300px;
+  min-height: 100px;
+  border: solid 1px #e8e8e8;
+  padding: 10px;
+  margin: 5px;
 }
 </style>
 
